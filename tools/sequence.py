@@ -1,11 +1,6 @@
-import numpy as np, random, operator, pandas as pd, matplotlib.pyplot as plt
-from tools.polygon import GeoFunc,NFP,PltFunc,RatotionPoly,getData,getConvex,Poly
-from tools.packing import PackingUtil,NFPAssistant,PolyListProcessor
-from heuristic import TOPOS,BottomLeftFill
-import json
-from shapely.geometry import Polygon,mapping
-from shapely import affinity
-import csv
+import numpy as np, operator, matplotlib.pyplot as plt
+from tools.polygon import get_data
+from tools.packing import NFPAssistant,PolyListProcessor
 import time
 import multiprocessing
 import datetime
@@ -271,7 +266,7 @@ class SA(object):
 if __name__=='__main__':
     starttime = datetime.datetime.now()
     # polys=getConvex(num=5)
-    polys = getData()
+    polys = get_data()
     print(len(polys))
     poly_list = PolyListProcessor.getPolyObjectList(polys+polys+polys,[0])
     # TOPOS(polys,1500)
