@@ -219,4 +219,128 @@ $$
 
 图15：互锁凹面(a)多边形，(b)仅使用滑动方法的临界多边形，(c)完整的临界多边形
 
-在本节中，我们描述了一种基于接触可行，而起始位置不相交的识别方法，利用这个方法可以使用前面描述的滑动技术来生成剩余的临界多边形构造的内部循环。例如：如果多边形$B$可以放置在图15c，则可以使用滑动算法来生成内部的临界多边形。通过对第3.2.节中描述方法的修改，找到可行的起始位置，这个过程再次包含了滑动。然而，我们的兴趣点对滑动追踪临界多边形不感兴趣，
+在本节中，我们描述了一种基于接触可行，而起始位置不相交的识别方法，利用这个方法可以使用前面描述的滑动技术来生成剩余的临界多边形构造的内部循环。例如：如果多边形$B$可以放置在图15c，则可以使用滑动算法来生成内部的临界多边形。通过对第3.2.节中描述方法的修改，找到可行的起始位置，这个过程再次包含了滑动。然而，我们对滑动追踪临界多边形不感兴趣，而是沿着特定的边向量执行平移时来解决边相交问题。为了解释这个过程，我们将检验一个例子，即沿着多边形$A$的边寻找起始位置。然后，这个过程可以很容易地为多边形$A$与多边形$B$的每条边重现，为创建所有可行的起始位置，从而允许多边形$B$对多边形$A$进行轨道环绕，最终创建完整的临界多边形。给定多边形$A$的一条边$e$，我们可以检测沿着边$e$轨道多边形$B$的潜在起始位置。这个过程可以包括平移多边形$B$，使$B$的每个顶点依次与$e$的起始顶点对齐。对于每个位置，我们都执行以下的步骤：如果多边形没有在位置上相交，则将这个位置记为两个多边形的可行的起始位置。如果多边形$B$与多边形$A$相交，则我们必须执行进一步的检测，并且最终使用边的滑动来沿边$e$执行遍历，直到找到一个不相交的位置或者到达边的末端。在这种情况下，第一个检测中包括了多边形$B$的两个连通边（在接触顶点处连接），这些边或者同时在边$e$的右边，或者与之平行。如果多边形$B$的任意一条连通边在边$e$的左侧，则它们将在多边形$A$的内部执行平移，并且可以被立即消除，因为当他们沿着向量$e$滑动时，将永远不会产生可靠的起始位置。
+
+图16a展示了一个例子，描述的是成对的连通边$b_3$和$b_4$在沿着$a_5$滑动时被消除，因为$b_4$在$a_5$的左边（注意：当使用的是多边形$B$的边$b_4$和多边形$A$的连通边$a_4$和$a_5$时就不会发生消除）。图16b展示了一个例子，描述的是两个连通边$b_1$和$b_2$都在边$a_5$的右边。
+
+![image-20210910133742199](Burke_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210910133742199.png)
+
+图16：使用边$a_5$实现的多边形$B$到多边形$A$的顶点对齐：(a)无效对齐；(b)有效对齐
+
+现在，假设两条连通边在边$e$的右边，并且多边形$A$和$B$相交，我们可以尝试沿着$e$定义的平移向量通过平移轨道多边形来解决覆盖问题。与前一节一样，我们现在可以对该向量进行修剪（过程相同）。导出的平移向量可以被应用到沿着边$e$滑动多边形$B$，然后执行另一个相交检测。如果两个多边形仍然相交 ，则使用平移向量重复这个过程，平移向量来自于边$e$从接触点到终止顶点的推导。如果相交被解决，则多边形$B$的参考点是一个潜在的起始位置。如果边$e$被完全遍历，但是仍然存在相交，则沿着边$e$和多边形$B$的对齐顶点或者连通边也无法找到可行的起始位置。然后，考虑多边形$B$的下一个顶点，依次类推直到检测完所有边顶点的可能性。注意：使用多边形$A$的顶点检测多边形$B$的边也很重要，但是由于这个过程与前面的相同所以不再讨论。图17展示了基于图17b的例子实现的这个过程。当使用$a_5$和连通边$b_1$与$b_2$的顶点对齐时，两个多边形的初始状态是相交的，因此我们需要沿着从边$a_5$中导出的向量来解决相交问题。
+
+![image-20210910133931584](Burke_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210910133931584.png)
+
+图17：起始点生成过程
+
+图17a展示了修剪过程和最近相交点（$\text{Pt}$）的识别。将此平移应用到多边形$B$后，两个多边形不再相交，因此找到了一个可行的起点，还可以再次使用标准的轨道方法生成临界多边形的环。我们在实现中包含的一个过程是使用秕 3.2. 节中介绍的方法来计算外部的临界多边形的环，然后我们依次在多边形$A$到多边形$B$中未遍历或者未标记的边上应用起始位置过程。在这个过程中，一旦找到一个可靠的起始位置，我们就计算从中导出的临界多边形的内部循环（标记边，是它们已经像以前一样被遍历）。这能确保算法的速度，因为随着在新的临界多边形环的产生，更多的边将被标记，因此减少了生成新的可行的起始点需要的计算要求。重复这个过程，直到所有的边都已经被看见，或者所有的可靠的起始位置都已经有效，并且返回了完整的临界多边形。
+
+## 3.4. 摘要
+
+给定了前面几节的功能性描述，我们可以使用下面的伪代码描述临界多边形的生成过程：
+
+```pseudocode
+输入：Polygon A, Polygon B
+
+Pt_A(y_min)=最小点 x 多边形A的值
+Pt_B(y_max)=最大点 x 多边形B的值
+IFP=初始的可行位置（initial feasible position）
+bool bStartPointAvailable=true;
+Point NFPLoopStartRefPoint;
+Point PolygonB_RefPoint;
+Array[Line[]] nfpEdges; // 使用 Line 型数组 存储 多边形边的数组
+int loopCount = 0; // NFP 环的数目
+
+Begin
+	使用平移 Pt_A(y_min)-Pt_B(y_max) 在 IFP 中放置多边形
+	NFPLoopStartRefPoint=Pt_B(y_max);
+	PolybonB_RefPoint=Pt_B(y_max);
+	while(bStartPointAvailable){
+		bStartPointAvailable=false;
+		// 找到接触点和分块接触所使用的这些点，用于生成接触结构
+		Touchers[] toucherStructures=FindTouchers(A,B);
+		
+		// 消除不可行的会产生立即相交的接触
+		Touchers[] feasibleTouchers=CanMove(A,B,toucherStructures);
+		
+		// 相对多边形 A 与 B，修剪平移
+		Touchers[] trimmedTouchers=Trim(feasibleTouchers,A,B);
+		
+		// 通过长度对修剪后的平移排序
+		Touchers[] lengthSortedTouchers=Sort(trimmedTouchers);
+		
+		// 沿着最长的可行平移向量平移多边形 B
+		B.Translate(lengthSortedTouchers[0].Translation);
+		
+		// 增加平移到 nfpEdges；基于静态标记遍历边
+		nfpEdges[loopCount].Add(lengthSortedTranslations[0].Translation);
+		A.MarkEdge(lengthSortedTranslations[0].StticEdgeID);
+		if(NFPLoopStartRefPoint==PolygonB_RefPoint) // 完备 NFP 环
+		{
+			Point nextStartPoint;
+			// 找到下一个可行的起始点 - 重置 PolygonB_RefPoint 到相关点
+			bStartPointAvailable=FindNextStartPoint(
+				A,B,&nextStartPoint, &PolygonB_RefPoint);
+            
+            if(bStartPointAvailable){
+            	// 平移多边形 B 到 nextStartPoint
+            	B.Translate(PolygonB_RefPoint-nextStartPoint);
+            	
+            	NFPLoopStartRefPoint=nextStartPoint;
+            	loopCount++;
+            }
+		}else{
+			bStartPointAvailable=true; // 容许继续遍历边
+		}
+	}
+	NFP_AB=Complete(nfpEdges);	//	从 nfpEdges 中复原 NFP
+	End
+```
+
+函数`FindNextStartPoint`的伪代码：
+
+```pseudocode
+Input: PolygonA, PolygonB, Point &nextStartPoint, Point &PolygonB_RefPoint
+
+Int A_EdgeCount=PolygonA.EdgeCount;
+Int B_EdgeCount=PolygonB.EdgeCount;
+Edge staticEdge;
+Edge movingEdge;
+
+Begin
+    for(int i=0;i<A_EdgeCount;i++){
+        if (PolygonA.IsEdgeMarked(i))
+            coutinue;
+        else
+            StaticEdge=PolygonA.GetEdge(i);
+        for(int j=0;j<B_EdgeCount;j++){
+            movingEdge=PolygonB.GetEdge(j);
+
+            // 移动 PolygonB 使得 movingEdge 在静态边的起始处开始
+            PolygonB.Translate(movingEdge.Start-staticEdge.Start);
+            Bool bFinishedEdge=false;
+            Bool bIntersects=PolygonB.bIntersectsWith(PolygonA);
+            while(bIntersects AND !bFinishedEdge){
+                // 滑动边直到不再相交或者到达 staticEdge 的终点
+                Toucher currentToucher=MakeToucher(staticEdge.Start);
+                Toucher trimmedToucher=Trim(currentToucher, PolygonA,PolygonB);
+                PolygonB.Translate(trimmedToucher.Translation);
+
+                bIntersects=PolygonB.bIntersectsWith(PolygonA);
+                bFinishedEdge=(bIntersects and (movingEdge.Start==staticEdge.End))
+            }
+            // 标记遍历边为看过（表示边的起始点是否被找到）
+            staticEdge.Mark(true);
+
+            if(!bIntersects){
+                //设置点的参考位置，并且传给 nextStartPoint
+                nextStartPoint=movingEdge.Start;
+                PolygonB_RefPoint=movingEdge.Start;
+                return true;
+            }
+        }
+    }
+    return false;
+    End
+```
+
