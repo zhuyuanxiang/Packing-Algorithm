@@ -20,11 +20,11 @@
 
 给定两个多边形$A$与$B$。固定形状$A$，从形状$B$中选择一个参考点，使形状$B$沿着形状$A$的边缘勾勒轮廓，即遍历形状$A$的所有边，跟踪参考点输出临界多边形$NFP_{AB}$，遍历时确保两个多边形始终接触但是从不相交。
 
-![image-20210910181336289](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210910181336289-16312688177591.png)
+![image-20210910181336289](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210910181336289.png)
 
 两个多边形的三种状态：相交（Intersection）、接触（Touching）、非相交（No Intersection）
 
-![image-20210910181441878](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210910181441878-16312688835142.png)
+![image-20210910181441878](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210910181441878.png)
 
 ## 2.2. NFP与标准三角几何在重叠检测上的对比
 
@@ -48,7 +48,7 @@ NFP生成的基本形式：两个多边形都是凸的。
 2. 将$A$和$B$的所有边移动到一个点（见图4b）；
 3. 沿逆时针顺序连接这些边产生临界多边形（见图4c）。
 
-![image-20210911114404942](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210911114404942-16313318462861.png)
+![image-20210911114404942](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210911114404942.png)
 
 凸的临界多边形生成算法是基于标准排序算法与通过平移实现的边再排序相结合，其优点是简单，速度快。缺点是无法对非凸的形状生成对应的临界多边形，并且凸包的简化导致凸的部分在排料中是无效的。
 
@@ -113,7 +113,7 @@ Mahadevan将“D函数”检测修改用于计算接触点；然后，利用这�
 4. 修剪可行的平移向量
 5. 应用可行的平移向量
 
-3.2.1. 检测接触边
+### 3.2.1. 检测接触边
 
 每一对接触边与接触顶点的位置存储在一起。
 
@@ -123,7 +123,7 @@ Mahadevan将“D函数”检测修改用于计算接触点；然后，利用这�
 
 将多边形$B$平移去轨道化多边形$A$所使用的向量必须根据具体情况从多边形$A$的或者多边形$B$的边中推导出来。图7展示了每种情况的例子。
 
-![image-20210911180001306](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210911180001306-16313544085222.png)
+![image-20210911180001306](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210911180001306.png)
 
 使用成对的接触边可以得到潜在的平移向量的集合，每一对接触边产生一个潜在的平移向量。成对的接触边的类型：
 
@@ -131,7 +131,7 @@ Mahadevan将“D函数”检测修改用于计算接触点；然后，利用这�
 2. 轨道边的一个顶点接触固定边的中间
 3. 固定边的一个顶点接触轨道边的中间
 
-![image-20210911180820215](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210911180820215-16313549026803.png)
+![image-20210911180820215](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210911180820215.png)
 
 表1：当两条边在顶点接触时，推导出潜在的平移向量
 
@@ -153,9 +153,146 @@ Mahadevan将“D函数”检测修改用于计算接触点；然后，利用这�
 3. 在案例5与6中，固定多边形的边在它的终止顶点接触，因此不能从固定多边形的边中导出平移
 4. 在案例3与5中，轨道多边形的边在固定多边形的边的左侧，因此不能导出平移
 
-![image-20210911182808155](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210911182808155-16313560971184.png)
+![image-20210911182808155](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210911182808155.png)
 
 ### 3.2.3. 寻找可行的平移向量
 
-从潜在的平移向量集合中选择不会导致直接相交的可行的平移向量。
+从潜在的平移向量集合中选择不会导致直接相交的可行的平移向量。使用第3.2.1.节中生成的成对的接触边的集合确定可行的平移向量。依次取出第3.2.2.节中确定的潜在平移向量，将它们放置在每对接触边的接触位置上。基于左/右区域的并集，可以定义位置关系，通过这种关系确定平移是否可行。
+
+![image-20210912102434576](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210912102434576.png)
+
+图9找出了两个潜在的平移向量$a_1$和$-b_3$，分别对$a_1$的不同组合方式进行检测，一旦有一次潜在的平移检测失败，则这个平移向量会被消除。
+
+![image-20210912112927288](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210912112927288.png)
+
+### 3.2.4. 修剪可行的平移向量
+
+修剪平移向量防止平移多边形$B$时与多边形$A$相交。图13a 提供了应用整个平移向量导致两个形状相交的例子。为了防止轨道多边形进入到固定多边形的体内，可靠的平移$a_7$必须被修剪到边$a_1$（见图13b）。先将多边形$B$的每个顶点投影到平移向量，并且检测它与多边形$A$的所有边的相交性，如果识别到可能与多边形$A$相交的顶点，使用公式：$\text{新的平移}=\text{相交点}-\text{平移}_{起始点}f$或者$\text{新的平移}=\text{平移}_{终止点}-\text{相交点}$减少平移距离。相交检测完成后还需要将平移向量从多边形$A$的所有顶点投影回来（通过将平移向量的终止顶点平移到每个顶点上），并且与多边形$B$的所有边执行相交检测。
+
+![image-20210912113337004](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210912113337004.png)
+
+我们的方法与Mahadevan的方法基本相同，区别在于我们的算法在每次相交时都执行修剪，从而减少全部过程中的相交次数，而Mahadevan的方法是在所有投影完成后修剪。
+
+### 3.2.5. 应用可行的平移向量
+
+基于修剪后的平移向量来平移多边形$B$到下一个“决策”点，然后再重新从第3.2.1.节接触边检测开始。
+
+## 3.3. 起始点
+
+在第3.2.节，我们提出了改进的生成NFP的方法，相比Mahadevan算法计算量更小，也更容易解释。在本节，使用一种基于可行地接触，但起始位置不相交的识别方法，再利用前节描述的滑动技术可以生成互锁凹面的两个多边形的内靠临界多边形。
+
+![image-20210912115213585](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210912115213585.png)
+
+![image-20210912115221602](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210912115221602.png)
+
+![image-20210912115234546](Burke_Notes_Complete and robust no-fit polygon generation for the irregular stock cutting problem.assets/image-20210912115234546.png)
+
+## 3.4. 摘要
+
+临界多边形生成过程的伪代码
+
+```pseudocode
+输入：Polygon A, Polygon B
+
+Pt_A(y_min)=最小点 x 多边形A的值
+Pt_B(y_max)=最大点 x 多边形B的值
+IFP=初始的可行位置（initial feasible position）
+bool bStartPointAvailable=true;
+Point NFPLoopStartRefPoint;
+Point PolygonB_RefPoint;
+Array[Line[]] nfpEdges; // 使用 Line 型数组 存储 多边形边的数组
+int loopCount = 0; // NFP 环的数目
+
+Begin
+	使用平移 Pt_A(y_min)-Pt_B(y_max) 在 IFP 中放置多边形
+	NFPLoopStartRefPoint=Pt_B(y_max);
+	PolybonB_RefPoint=Pt_B(y_max);
+	while(bStartPointAvailable){
+		bStartPointAvailable=false;
+		// 找到接触点和分块接触所使用的这些点，用于生成接触结构
+		Touchers[] toucherStructures=FindTouchers(A,B);
+		
+		// 消除不可行的会产生立即相交的接触
+		Touchers[] feasibleTouchers=CanMove(A,B,toucherStructures);
+		
+		// 相对多边形 A 与 B，修剪平移
+		Touchers[] trimmedTouchers=Trim(feasibleTouchers,A,B);
+		
+		// 通过长度对修剪后的平移排序
+		Touchers[] lengthSortedTouchers=Sort(trimmedTouchers);
+		
+		// 沿着最长的可行平移向量平移多边形 B
+		B.Translate(lengthSortedTouchers[0].Translation);
+		
+		// 增加平移到 nfpEdges；基于静态标记遍历边
+		nfpEdges[loopCount].Add(lengthSortedTranslations[0].Translation);
+		A.MarkEdge(lengthSortedTranslations[0].StticEdgeID);
+		if(NFPLoopStartRefPoint==PolygonB_RefPoint) // 完备 NFP 环
+		{
+			Point nextStartPoint;
+			// 找到下一个可行的起始点 - 重置 PolygonB_RefPoint 到相关点
+			bStartPointAvailable=FindNextStartPoint(
+				A,B,&nextStartPoint, &PolygonB_RefPoint);
+            
+            if(bStartPointAvailable){
+            	// 平移多边形 B 到 nextStartPoint
+            	B.Translate(PolygonB_RefPoint-nextStartPoint);
+            	
+            	NFPLoopStartRefPoint=nextStartPoint;
+            	loopCount++;
+            }
+		}else{
+			bStartPointAvailable=true; // 容许继续遍历边
+		}
+	}
+	NFP_AB=Complete(nfpEdges);	//	从 nfpEdges 中复原 NFP
+	End
+```
+
+函数`FindNextStartPoint`的伪代码：
+
+```pseudocode
+Input: PolygonA, PolygonB, Point &nextStartPoint, Point &PolygonB_RefPoint
+
+Int A_EdgeCount=PolygonA.EdgeCount;
+Int B_EdgeCount=PolygonB.EdgeCount;
+Edge staticEdge;
+Edge movingEdge;
+
+Begin
+    for(int i=0;i<A_EdgeCount;i++){
+        if (PolygonA.IsEdgeMarked(i))
+            coutinue;
+        else
+            StaticEdge=PolygonA.GetEdge(i);
+        for(int j=0;j<B_EdgeCount;j++){
+            movingEdge=PolygonB.GetEdge(j);
+
+            // 移动 PolygonB 使得 movingEdge 在静态边的起始处开始
+            PolygonB.Translate(movingEdge.Start-staticEdge.Start);
+            Bool bFinishedEdge=false;
+            Bool bIntersects=PolygonB.bIntersectsWith(PolygonA);
+            while(bIntersects AND !bFinishedEdge){
+                // 滑动边直到不再相交或者到达 staticEdge 的终点
+                Toucher currentToucher=MakeToucher(staticEdge.Start);
+                Toucher trimmedToucher=Trim(currentToucher, PolygonA,PolygonB);
+                PolygonB.Translate(trimmedToucher.Translation);
+
+                bIntersects=PolygonB.bIntersectsWith(PolygonA);
+                bFinishedEdge=(bIntersects and (movingEdge.Start==staticEdge.End))
+            }
+            // 标记遍历边为看过（表示边的起始点是否被找到）
+            staticEdge.Mark(true);
+
+            if(!bIntersects){
+                //设置点的参考位置，并且传给 nextStartPoint
+                nextStartPoint=movingEdge.Start;
+                PolygonB_RefPoint=movingEdge.Start;
+                return true;
+            }
+        }
+    }
+    return false;
+    End
+```
 
