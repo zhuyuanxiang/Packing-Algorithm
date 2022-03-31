@@ -21,7 +21,7 @@ class bestFitPosition(object):
             self.error=-6
             return
         sliding_locus=self.sliding[self.locus_index]
-        geoFunc.slidePoly(self.sliding,aim_pt[0]-sliding_locus[0],aim_pt[1]-sliding_locus[1])
+        geoFunc.slide_polygon(self.sliding, aim_pt[0] - sliding_locus[0], aim_pt[1] - sliding_locus[1])
         if self.show==True:
             self.showAll()
     
@@ -62,13 +62,13 @@ class bestFitPosition(object):
         status=[]
         # 计算两个端点的情况
         for i,pt in enumerate(edge):
-            geoFunc.slidePoly(self.sliding,pt[0]-locus_pt[0],pt[1]-locus_pt[1]) # 平移到目标位置
+            geoFunc.slide_polygon(self.sliding, pt[0] - locus_pt[0], pt[1] - locus_pt[1]) # 平移到目标位置
             similar_sliding= geoFunc.similarPoly(self.sliding)
             sim_slidingP=Polygon(similar_sliding)
             if sim_slidingP.is_valid==False or self.sim_stationaryP.is_valid==False: # 排除例外情况
                 return []
             inter=sim_slidingP.intersection(self.sim_stationaryP)
-            inter_area=geoFunc.computeInterArea(mapping(inter))
+            inter_area=geoFunc.compute_intersect_area(mapping(inter))
             pt_status={
                 "area":inter_area,
                 "pt":[pt[0],pt[1]], # 注意该处的赋值！！！不要直接赋值！！！
@@ -105,13 +105,13 @@ class bestFitPosition(object):
         # 平移一下
         mid=[pt0[0]+vec[0]/_len,pt0[1]+vec[1]/_len]
         locus_pt=self.sliding[self.locus_index]
-        geoFunc.slidePoly(self.sliding,mid[0]-locus_pt[0],mid[1]-locus_pt[1])
+        geoFunc.slide_polygon(self.sliding, mid[0] - locus_pt[0], mid[1] - locus_pt[1])
 
         # 计算平移后的交叉面积
         similar_sliding= geoFunc.similarPoly(self.sliding)
         sim_slidingP=Polygon(similar_sliding)
         inter=sim_slidingP.intersection(self.sim_stationaryP)
-        inter_area=geoFunc.computeInterArea(mapping(inter))
+        inter_area=geoFunc.compute_intersect_area(mapping(inter))
 
         # 如果更大，就是1，如果更小或者不变，就是0
         if inter_area>_area:

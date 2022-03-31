@@ -1,11 +1,13 @@
-import time
 from math import acos
 from math import sqrt
 
 import numpy as np
 from shapely.geometry import mapping
 
-bias = 0.000001
+from packing_algorithm.config import bias
+
+
+# bias = 0.000001
 
 
 class GeometryAssistant(object):
@@ -14,22 +16,24 @@ class GeometryAssistant(object):
     """
 
     @staticmethod
-    def getAdjustPts(original_points, first_pt, to_real):
-        '''部分情况需要根据相对位置调整范围'''
+    def get_adjust_points(original_points, first_pt, to_real):
+        """部分情况需要根据相对位置调整范围"""
         new_points = []
         for pt in original_points:
-            if to_real == True:
+            if to_real:
                 new_points.append([pt[0] + first_pt[0], pt[1] + first_pt[1]])
             else:
                 new_points.append([pt[0] - first_pt[0], pt[1] - first_pt[1]])
         return new_points
 
     @staticmethod
-    def judgeContain(pt, parts):
-        '''判断点是否包含在NFP凸分解后的凸多边形列表中 输入相对位置点'''
+    def judge_contain(pt, parts):
+        """
+        判断点是否包含在NFP凸分解后的凸多边形列表中 输入相对位置点
+        """
 
         def cross(p0, p1, p2):
-            '''计算叉乘'''
+            """计算叉乘"""
             return (p1[0] - p0[0]) * (p2[1] - p0[1]) - (p2[0] - p0[0]) * (p1[1] - p0[1])
 
         for part in parts:  # 对凸多边形逐个判断
@@ -51,16 +55,18 @@ class GeometryAssistant(object):
         return False
 
     @staticmethod
-    def getPtNFPPD(pt, convex_status, nfp, pd_bias):
-        '''根据最终属性求解PD'''
+    def get_point_nfp_pd(pt, convex_status, nfp, pd_bias):
+        """
+        根据最终属性求解PD
+        """
         min_pd, edges = 999999999, GeometryAssistant.getPolyEdges(nfp)
         last_num = 4  # 最多求往后的3条边
         for k in range(len(edges)):
             # 求解直线边界PD
             nfp_pt, edge = nfp[k], edges[k]
             foot_pt = GeometryAssistant.getFootPoint(pt, edge[0], edge[1])  # 求解垂足
-            if GeometryAssistant.bounds(foot_pt[0], edge[0][0], edge[1][0]) == False or GeometryAssistant.bounds(
-                    foot_pt[1], edge[0][1], edge[1][1]) == False:
+            if not (GeometryAssistant.bounds(foot_pt[0], edge[0][0], edge[1][0]) and GeometryAssistant.bounds(
+                    foot_pt[1], edge[0][1], edge[1][1])):
                 continue
             pd = sqrt(pow(foot_pt[0] - pt[0], 2) + pow(foot_pt[1] - pt[1], 2))
             if pd < min_pd:
@@ -94,40 +100,42 @@ class GeometryAssistant(object):
         return k, b
 
     @staticmethod
-    def parallelInter(line1, line2):
-        # 判断是否水平，水平用x做参考，其他用y
+    def parallel_intersection(line1, line2):
+        """
+        判断是否水平，水平用x做参考，其他用y
+        """
         k = 1
         if line1[0][1] == line1[1][1] or line2[0][1] == line2[1][1]:
             k = 0
         # 第一个点的包含（不考虑为点）
-        if GeometryAssistant.bounds(line1[0][k], line2[0][k], line2[1][k]) == True:
-            if GeometryAssistant.bounds(line1[1][k], line2[0][k], line2[1][k]) == True:
+        if GeometryAssistant.bounds(line1[0][k], line2[0][k], line2[1][k]):
+            if GeometryAssistant.bounds(line1[1][k], line2[0][k], line2[1][k]):
                 return [line1[0], line1[1]], True  # 返回中间的直线
             else:
-                if GeometryAssistant.bounds(line2[0][k], line1[0][k], line1[1][k]) == True:
+                if GeometryAssistant.bounds(line2[0][k], line1[0][k], line1[1][k]):
                     return [line1[0], line2[0]], True
                 else:
                     return [line1[0], line2[1]], True
 
         # 没有包含第一个点，判断第二个
-        if GeometryAssistant.bounds(line1[1][k], line2[0][k], line2[1][k]) == True:
-            if GeometryAssistant.bounds(line2[0][k], line1[0][k], line1[1][k]) == True:
+        if GeometryAssistant.bounds(line1[1][k], line2[0][k], line2[1][k]):
+            if GeometryAssistant.bounds(line2[0][k], line1[0][k], line1[1][k]):
                 return [line1[1], line2[0]], True
             else:
                 return [line1[1], line2[1]], True
 
         # Vectical没有包含Line的两个点
-        if GeometryAssistant.bounds(line2[0][k], line1[0][k], line1[1][k]) == True:
+        if GeometryAssistant.bounds(line2[0][k], line1[0][k], line1[1][k]):
             return [line2[0], line2[1]], True
         else:
             return [], False
 
     @staticmethod
-    def verticalInter(ver_line, line):
+    def vertical_intersection(ver_line, line):
         # 如果另一条直线也垂直
         if abs(line[0][0] - line[1][0]) < bias:
             if abs(line[0][0] - ver_line[0][0]):
-                return GeometryAssistant.parallelInter(line, ver_line)
+                return GeometryAssistant.parallel_intersection(line, ver_line)
             else:
                 return [], False
         # 否则求解直线交点
@@ -142,7 +150,7 @@ class GeometryAssistant(object):
             return [], False
 
     @staticmethod
-    def lineInter(line1, line2):
+    def line_intersection(line1, line2):
         if min(line1[0][0], line1[1][0]) > max(line2[0][0], line2[1][0]) or max(line1[0][0], line1[1][0]) < min(
                 line2[0][0], line2[1][0]) or min(line1[0][1], line1[1][1]) > max(line2[0][1], line2[1][1]) or max(
                 line1[0][1], line1[1][1]) < min(line2[0][1], line2[1][1]):
@@ -152,15 +160,15 @@ class GeometryAssistant(object):
             return [], False
         # 出现直线垂直的情况（没有k）
         if abs(line1[0][0] - line1[1][0]) < bias:
-            return GeometryAssistant.verticalInter(line1, line2)
+            return GeometryAssistant.vertical_intersection(line1, line2)
         if abs(line2[0][0] - line2[1][0]) < bias:
-            return GeometryAssistant.verticalInter(line2, line1)
+            return GeometryAssistant.vertical_intersection(line2, line1)
         # 求解y=kx+b
         k1, b1 = GeometryAssistant.getLineCoe(line1)
         k2, b2 = GeometryAssistant.getLineCoe(line2)
         if k1 == k2:
             if b1 == b2:
-                return GeometryAssistant.parallelInter(line1, line2)
+                return GeometryAssistant.parallel_intersection(line1, line2)
             else:
                 return [], False
         # 求直线交点
@@ -181,18 +189,20 @@ class GeometryAssistant(object):
 
     @staticmethod
     def interBetweenNFPs(nfp1_edges, nfp2_edges, bounds1, bounds2):
-        '''计算直线交点，仅考虑'''
+        """
+        计算直线交点，仅考虑
+        """
         inter_points, intersects = [], False
         for edge1 in nfp1_edges:
             if max(edge1[0][0], edge1[1][0]) < bounds2[0] or min(edge1[0][0], edge1[1][0]) > bounds2[2] or max(
-                edge1[0][1], edge1[1][1]) < bounds2[1] or min(edge1[0][1], edge1[1][1]) > bounds2[3]:
+                    edge1[0][1], edge1[1][1]) < bounds2[1] or min(edge1[0][1], edge1[1][1]) > bounds2[3]:
                 continue
             for edge2 in nfp2_edges:
                 if max(edge2[0][0], edge2[1][0]) < bounds1[0] and min(edge2[0][0], edge2[1][0]) > bounds1[2] or max(
-                    edge2[0][1], edge2[1][1]) < bounds1[1] and min(edge2[0][1], edge2[1][1]) > bounds1[3]:
+                        edge2[0][1], edge2[1][1]) < bounds1[1] and min(edge2[0][1], edge2[1][1]) > bounds1[3]:
                     continue
-                pts, inter_or = GeometryAssistant.lineInter(edge1, edge2)
-                if inter_or == False:
+                pts, inter_or = GeometryAssistant.line_intersection(edge1, edge2)
+                if not inter_or:
                     continue
                 intersects = True  # 只要有直线交点全部认为是
                 for pt in pts:
@@ -203,20 +213,22 @@ class GeometryAssistant(object):
 
     @staticmethod
     def interNFPIFR(nfp, ifr_bounds, ifr_edges, ifr):
-        '''求解NFP与IFR的相交区域'''
+        """
+        求解NFP与IFR的相交区域
+        """
         total_points, border_pts, inside_indexs = [], [], []  # NFP在IFR内部的点及交，计算参考和边界可行范围
         contain_last, contain_this = False, False
         temp_nfp = nfp + [nfp[0]]
         for i, pt in enumerate(temp_nfp):
             # 第一个点
             if i == 0:
-                if GeometryAssistant.boundsContain(ifr_bounds, pt) == True:
+                if GeometryAssistant.boundsContain(ifr_bounds, pt):
                     inside_indexs.append(i)
                     total_points.append([pt[0], pt[1]])
                     contain_last = True
                 continue
             # 后续的点求解
-            if GeometryAssistant.boundsContain(ifr_bounds, pt) == True:
+            if GeometryAssistant.boundsContain(ifr_bounds, pt):
                 if i != len(temp_nfp) - 1:
                     inside_indexs.append(i)
                     total_points.append([pt[0], pt[1]])
@@ -224,10 +236,10 @@ class GeometryAssistant(object):
             else:
                 contain_this = False
             # 只有两个不全在内侧的时候才需要计算交点
-            if contain_last == False or contain_this == False:
+            if not contain_last or not contain_this:
                 for k, edge in enumerate(ifr_edges):
-                    inter_pts, inter_or = GeometryAssistant.lineInter([temp_nfp[i - 1], temp_nfp[i]], edge)
-                    if inter_or == True:
+                    inter_pts, inter_or = GeometryAssistant.line_intersection([temp_nfp[i - 1], temp_nfp[i]], edge)
+                    if inter_or:
                         for new_pt in inter_pts:
                             if new_pt not in total_points:
                                 total_points.append(new_pt)  # 将交点加入可行点
@@ -237,7 +249,7 @@ class GeometryAssistant(object):
 
     @staticmethod
     def addRelativeRecord(record_target, target_key, inside_indexs, border_pts, first_pt):
-        adjust_border_pts = GeometryAssistant.getAdjustPts(border_pts, first_pt, False)
+        adjust_border_pts = GeometryAssistant.get_adjust_points(border_pts, first_pt, False)
         record_target[target_key] = {}
         record_target[target_key]["adjust_border_pts"] = adjust_border_pts
         record_target[target_key]["inside_indexs"] = inside_indexs
@@ -250,9 +262,7 @@ class GeometryAssistant(object):
 
     @staticmethod
     def boundsContain(bounds, pt):
-        if pt[0] >= bounds[0] and pt[0] <= bounds[2] and pt[1] >= bounds[1] and pt[1] <= bounds[3]:
-            return True
-        return False
+        return bounds[0] <= pt[0] <= bounds[2] and bounds[1] <= pt[1] <= bounds[3]
 
     @staticmethod
     def getPolysRight(polys):
@@ -265,7 +275,9 @@ class GeometryAssistant(object):
 
     @staticmethod
     def kwtGroupToArray(kwt_group, judge_area):
-        '''将几何对象转化为数组，以及是否判断面积大小'''
+        """
+        将几何对象转化为数组，以及是否判断面积大小
+        """
         array = []
         if kwt_group.geom_type == "Polygon":
             array = GeometryAssistant.kwtItemToArray(kwt_group, judge_area)  # 最终结果只和顶点相关
@@ -276,7 +288,9 @@ class GeometryAssistant(object):
 
     @staticmethod
     def kwtItemToArray(kwt_item, judge_area):
-        '''将一个kwt对象转化为数组（比如Polygon）'''
+        """
+        将一个kwt对象转化为数组（比如Polygon）
+        """
         if judge_area == True and kwt_item.area < bias:
             return []
         res = mapping(kwt_item)
@@ -326,7 +340,9 @@ class GeometryAssistant(object):
 
     @staticmethod
     def getSlide(poly, x, y):
-        '''获得平移后的情况'''
+        """
+        获得平移后的情况
+        """
         new_vertex = []
         for point in poly:
             new_point = [point[0] + x, point[1] + y]
@@ -341,14 +357,18 @@ class GeometryAssistant(object):
 
     @staticmethod
     def slidePoly(poly, x, y):
-        '''将对象平移'''
+        """
+        将对象平移
+        """
         for point in poly:
             point[0] = point[0] + x
             point[1] = point[1] + y
 
     @staticmethod
     def slideToPoint(poly, pt):
-        '''将对象平移'''
+        """
+        将对象平移
+        """
         top_pt = GeometryAssistant.getTopPoint(poly)
         x, y = pt[0] - top_pt[0], pt[1] - top_pt[1]
         for point in poly:
@@ -362,12 +382,14 @@ class GeometryAssistant(object):
 
     @staticmethod
     def deleteOnline(poly):
-        '''删除两条直线在一个延长线情况'''
+        """
+        删除两条直线在一个延长线情况
+        """
         new_poly = []
         for i in range(-2, len(poly) - 2):
             vec1 = GeometryAssistant.getDirectionalVector([poly[i + 1][0] - poly[i][0], poly[i + 1][1] - poly[i][1]])
             vec2 = GeometryAssistant.getDirectionalVector(
-                [poly[i + 2][0] - poly[i + 1][0], poly[i + 2][1] - poly[i + 1][1]])
+                    [poly[i + 2][0] - poly[i + 1][0], poly[i + 2][1] - poly[i + 1][1]])
             if abs(vec1[0] - vec2[0]) > bias or abs(vec1[1] - vec2[1]) > bias:
                 new_poly.append(poly[i + 1])
         return new_poly
@@ -382,7 +404,7 @@ class GeometryAssistant(object):
         return top_pt
 
     @staticmethod
-    def getBottomPoint(poly):
+    def get_bottom_point(poly):
         bottom_pt, min_y = [], 999999999
         for pt in poly:
             if pt[1] < min_y:
@@ -502,19 +524,21 @@ class GeometryAssistant(object):
 
     @staticmethod
     def getFeasiblePt(ifr_bound, infeasible_border_range):
-        '''求解可行域的中的可行点，从左下角逆时针'''
+        """
+        求解可行域的中的可行点，从左下角逆时针
+        """
         potential_points = []
         for k, every_border_range in enumerate(infeasible_border_range):
             all_position = list(
-                set([p for bound in every_border_range for p in bound] + [ifr_bound[k % 2], ifr_bound[k % 2 + 2]]))
+                    set([p for bound in every_border_range for p in bound] + [ifr_bound[k % 2], ifr_bound[k % 2 + 2]]))
             for position in all_position:
                 feasible = True
                 for test_range in every_border_range:
-                    if test_range[0] < position < test_range[1] or position > ifr_bound[k % 2] or position < ifr_bound[
-                        k % 2 + 2]:
+                    if (test_range[0] < position < test_range[1] or position > ifr_bound[k % 2] or position < ifr_bound[
+                        k % 2 + 2]):
                         feasible = False
                         break
-                if feasible == True:
+                if feasible:
                     if k % 2 == 0:
                         potential_points.append([position, ifr_bound[k + 1]])
                     else:
@@ -522,29 +546,9 @@ class GeometryAssistant(object):
         return potential_points
 
 
-class OutputFunc(object):
-    '''输出不同颜色字体'''
-
-    @staticmethod
-    def outputWarning(prefix, _str):
-        '''输出红色字体'''
-        _str = prefix + str(time.strftime("%H:%M:%S", time.localtime())) + " " + str(_str)
-        print("\033[0;31m", _str, "\033[0m")
-
-    @staticmethod
-    def outputAttention(prefix, _str):
-        '''输出绿色字体'''
-        _str = prefix + str(time.strftime("%H:%M:%S", time.localtime())) + " " + str(_str)
-        print("\033[0;32m", _str, "\033[0m")
-
-    @staticmethod
-    def outputInfo(prefix, _str):
-        '''输出浅黄色字体'''
-        _str = prefix + str(time.strftime("%H:%M:%S", time.localtime())) + " " + str(_str)
-        print("\033[0;33m", _str, "\033[0m")
-
-
-def lineInt(l1, l2, precision=0):
+# 参考代码：https://github.com/wsilva32/poly_decomp.py/blob/cb1a47f218e076772b9df137c1928023882df5e5/poly_decomp
+# /poly_decomp.py
+def line_intersection(l1, l2, precision=0):
     """Compute the intersection between two lines.
     Keyword arguments:
     l1 -- first line
@@ -589,7 +593,7 @@ def lineSegmentsIntersect(p1, p2, q1, q2):
     s = (dx * (q1[1] - p1[1]) + dy * (p1[0] - q1[0])) / (da * dy - db * dx)
     t = (da * (p1[1] - q1[1]) + db * (q1[0] - p1[0])) / (db * dx - da * dy)
 
-    return s >= 0 and s <= 1 and t >= 0 and t <= 1
+    return 0 <= s <= 1 and 0 <= t <= 1
 
 
 def triangleArea(a, b, c):
@@ -754,7 +758,7 @@ def polygonCanSee(polygon, a, b):
             l1[1] = polygonAt(polygon, b)
             l2[0] = polygonAt(polygon, i)
             l2[1] = polygonAt(polygon, i + 1)
-            p = lineInt(l1, l2)
+            p = line_intersection(l1, l2)
             if sqdist(polygonAt(polygon, a), p) < dist:  # if edge is blocking visibility to b
                 return False
 
@@ -837,7 +841,8 @@ def polygonDecomp(polygon):
 
 
 def polygonSlice(polygon, cutEdges):
-    """Slices the polygon given one or more cut edges. If given one, this function will return two polygons (false on failure). If many, an array of polygons.
+    """Slices the polygon given one or more cut edges. If given one, this function will return two polygons (false on
+    failure). If many, an array of polygons.
     Keyword arguments:
     polygon -- The polygon
     cutEdges -- A list of edges to cut on, as returned by getCutEdges()
@@ -1000,7 +1005,8 @@ def polygonQuickDecomp(polygon, result=None, reflexVertices=None, steinerPoints=
 
             # if there are no vertices to connect to, choose a point in the middle
             if lowerIndex == (upperIndex + 1) % len(polygon):
-                # print("Case 1: Vertex("+str(i)+"), lowerIndex("+str(lowerIndex)+"), upperIndex("+str(upperIndex)+"), poly.size("+str(len(polygon))+")")
+                # print("Case 1: Vertex("+str(i)+"), lowerIndex("+str(lowerIndex)+"), upperIndex("+str(
+                # upperIndex)+"), poly.size("+str(len(polygon))+")")
                 p[0] = (lowerInt[0] + upperInt[0]) / 2
                 p[1] = (lowerInt[1] + upperInt[1]) / 2
                 steinerPoints.append(p)
@@ -1030,7 +1036,8 @@ def polygonQuickDecomp(polygon, result=None, reflexVertices=None, steinerPoints=
 
             else:
                 # connect to the closest point within the triangle
-                # print("Case 2: Vertex("+str(i)+"), closestIndex("+str(closestIndex)+"), poly.size("+str(len(polygon))+")\n")
+                # print("Case 2: Vertex("+str(i)+"), closestIndex("+str(closestIndex)+"), poly.size("+str(len(
+                # polygon))+")\n")
 
                 if lowerIndex > upperIndex:
                     upperIndex += len(polygon)

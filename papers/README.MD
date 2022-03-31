@@ -1,4 +1,9 @@
-# 参考论文
+## 目录说明
+
+EN：原始的英文论文
+CN：翻译的中文论文，原始的中文论文，原始的中文资料
+Notes：论文中抽取出的重点
+## 参考论文
 
 1. Abeysooriya_Jostle heuristics for the 2D-irregular shapes bin packing problems with free rotation
    《挤压启发式算法在可以自由旋转的二维不规则形状装箱问题的应用》

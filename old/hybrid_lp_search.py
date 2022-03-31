@@ -5,19 +5,18 @@ Created on Wed Dec 11, 2020
 @author: seanys,prinway
 -----------------------------------
 """
-from tools.polygon import GeoFunc,PltFunc,getData,getConvex,NFP
-from tools.packing import PolyListProcessor,NFPAssistant,PackingUtil
+from tools.polygon import get_data
+from tools.geometry_functions import GeometryFunctions
+from tools.plt_func import PltFunc
+from tools.poly_list_processor import PolyListProcessor
+from tools.nfp_assistant import NFPAssistant
+from tools.packing_util import PackingUtil
 from tools.lp_assistant import LPAssistant
-from heuristic import BottomLeftFill
 from compaction import searchForBest
-from shapely.geometry import Polygon,Point,mapping,LineString
-from interval import Interval
+from shapely.geometry import Polygon
 import pandas as pd
 import json
 import copy
-import random
-import math
-import datetime
 import time
 import csv # 写csv
 import numpy as np
@@ -162,7 +161,7 @@ class LPSearch(object):
                     # 获取形状顶部位置并平移过去
                     new_poly=copy.deepcopy(self.all_polygons[choose_index][best_orientation])
                     top_point=LPAssistant.getTopPoint(new_poly)
-                    GeoFunc.slidePoly(new_poly,best_position[0]-top_point[0],best_position[1]-top_point[1])
+                    GeometryFunctions.slide_polygon(new_poly, best_position[0] - top_point[0], best_position[1] - top_point[1])
                     # 更新形状与重叠情况
                     self.polys[choose_index]=new_poly
                     self.updateOverlap(choose_index)
@@ -405,7 +404,7 @@ class LPSearch(object):
             right_pt=LPAssistant.getRightPoint(poly)
             if right_pt[0]>self.cur_length:
                 delta_x=self.cur_length-right_pt[0]
-                GeoFunc.slidePoly(poly,delta_x,0)
+                GeometryFunctions.slide_polygon(poly, delta_x, 0)
                 top_pt=self.poly_status[index][1]
                 self.poly_status[index][1]=[top_pt[0]+delta_x,top_pt[1]]
 
@@ -435,7 +434,7 @@ class LPSearch(object):
         row=j*192+i*16+self.poly_status[j][2]*4+self.poly_status[i][2]
         bottom_pt=LPAssistant.getBottomPoint(self.polys[j])
         delta_x,delta_y=bottom_pt[0],bottom_pt[1]
-        nfp=GeoFunc.getSlide(json.loads(self.fu_pre["nfp"][row]),delta_x,delta_y)
+        nfp=GeometryFunctions.get_slide(json.loads(self.fu_pre["nfp"][row]), delta_x, delta_y)
         return nfp
 
     # 直接读取目标情况-带方向
@@ -456,7 +455,7 @@ class LPSearch(object):
                 row=j*192+i*16+self.poly_status[j][2]*4+orientation
                 bottom_pt=LPAssistant.getBottomPoint(self.polys[j])
                 delta_x,delta_y=bottom_pt[0],bottom_pt[1]
-                nfp=GeoFunc.getSlide(json.loads(self.fu_pre["nfp"][row]),delta_x,delta_y)
+                nfp=GeometryFunctions.get_slide(json.loads(self.fu_pre["nfp"][row]), delta_x, delta_y)
             else:
                 nfp=LPAssistant.deleteOnline(self.NFPAssistant.getDirectNFP(self.polys[j],self.polys[i])) # NFP可能有同一直线上的点
             # 计算对应目标函数
@@ -482,7 +481,7 @@ class LPSearch(object):
 
 if __name__=='__main__':
     # polys=getConvex(num=5)
-    polys=getData()
+    polys= get_data()
     # nfp_ass=NFPAssistant(polys,store_nfp=False,get_all_nfp=True,load_history=True)
     # print(datetime.datetime.now(),"计算完成NFP")
     # blf=BottomLeftFill(760,polys,vertical=False,NFPAssistant=nfp_ass)

@@ -5,8 +5,9 @@ Created on Wed June 10, 2020
 @author: seanys,prinway
 -----------------------------------
 """
-from tools.polygon import PltFunc,getData
-from tools.geo_assistant import GeometryAssistant
+from tools.polygon import get_data
+from tools.plt_func import PltFunc
+from tools.geometry_assitant import GeometryAssistant
 from shapely.geometry import Polygon,Point,mapping,LineString
 import pandas as pd
 import json
@@ -383,7 +384,7 @@ class GSMPD(object):
     def getNFP(self, i, j, oi, oj):
         '''根据形状和角度获得NFP的情况'''
         row = j*192 + i*16 + oj*4 + oi # i为移动形状，j为固定位置
-        bottom_pt = GeometryAssistant.getBottomPoint(self.polys[j])
+        bottom_pt = GeometryAssistant.get_bottom_point(self.polys[j])
         nfp = GeometryAssistant.getSlide(json.loads(self.all_nfps["nfp"][row]), bottom_pt[0], bottom_pt[1])
         return GeometryAssistant.deleteOnline(nfp) # 需要删除同直线的情况
 
@@ -434,5 +435,5 @@ class GSMPD(object):
         print("\033[0;33m",_str,"\033[0m")
 
 if __name__=='__main__':
-    polys=getData()
+    polys= get_data()
     GSMPD(760,polys)

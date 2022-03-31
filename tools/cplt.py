@@ -1,4 +1,4 @@
-from polygon import PltFunc
+from tools.plt_func import PltFunc
 import pandas as pd
 import json
 

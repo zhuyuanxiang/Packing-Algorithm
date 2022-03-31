@@ -2,7 +2,7 @@
 通过封装函数进行性能测试
 Created on Thu Aug 6, 2020
 """
-from tools.geo_assistant import GeometryAssistant
+from tools.geometry_assitant import GeometryAssistant
 from random import random, choice
 from json import loads
 from pandas import read_csv
@@ -66,7 +66,7 @@ class PD_test(object):
             return 0
 
         if len(nfp_parts) > 0:
-            if not GeometryAssistant.judgeContain(relative_pt,nfp_parts):
+            if not GeometryAssistant.judge_contain(relative_pt, nfp_parts):
                 self.last_exterior_pts[row][digital_key] = 1
                 self.stat[4] = self.stat[4]+1
                 return 0
@@ -86,7 +86,7 @@ class PD_test(object):
         #     self.last_digital_pds[row][digital_key] = digital_pd
         #     return digital_pd
         self.stat[5] = self.stat[5]+1
-        digital_pd = GeometryAssistant.getPtNFPPD(original_digital_pt, convex_status, nfp, self.bias)
+        digital_pd = GeometryAssistant.get_point_nfp_pd(original_digital_pt, convex_status, nfp, self.bias)
         self.last_grid_pds[row][grid_key] = digital_pd
         self.last_digital_pds[row][digital_key] = digital_pd
         return digital_pd

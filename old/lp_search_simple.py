@@ -5,8 +5,9 @@ Created on Wed June 10, 2020
 @author: seanys,prinway
 -----------------------------------
 """
-from tools.polygon import PltFunc,getData
-from tools.geo_assistant import GeometryAssistant
+from tools.polygon import get_data
+from tools.plt_func import PltFunc
+from tools.geometry_assitant import GeometryAssistant
 from shapely.geometry import Polygon,Point,mapping,LineString
 import pandas as pd
 import json
@@ -317,7 +318,7 @@ class GSMPD(object):
     def getNFP(self, i, j, oi, oj):
         '''根据形状和角度获得NFP的情况'''
         row = self.computeRow(i, j, oi, oj)
-        bottom_pt = GeometryAssistant.getBottomPoint(self.polys[j])
+        bottom_pt = GeometryAssistant.get_bottom_point(self.polys[j])
         nfp = GeometryAssistant.getSlide(json.loads(self.all_nfps["nfp"][row]), bottom_pt[0], bottom_pt[1])
         return nfp
 

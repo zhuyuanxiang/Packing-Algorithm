@@ -10,18 +10,15 @@
 import numpy as np
 import json
 from keras.models import Sequential
-from keras import models
 from keras import layers
 from keras.models import load_model
-from keras import optimizers
-import matplotlib.pyplot as plt
 from shapely.geometry import Polygon,mapping
 import random
 import pandas as pd
 import time
 import csv
 from polygon import GeoFunc,PltFunc
-from sequence import BottomLeftFill
+from tools.sequence import BottomLeftFill
 from feasible import getFeasibleByBottom
 
 class trainModel(object):
@@ -61,7 +58,7 @@ class trainModel(object):
       new_polys=[]
       for i,poly in enumerate(polys):
          centroid=GeoFunc.getPt(Polygon(poly).centroid)
-         new_polys.append(GeoFunc.getSlide(poly,Y[i*2]*1500-centroid[0],Y[i*2+1]*3000-centroid[1]))
+         new_polys.append(GeoFunc.get_slide(poly, Y[i * 2] * 1500 - centroid[0], Y[i * 2 + 1] * 3000 - centroid[1]))
       
       # 获得可行解
       feasible_polys=getFeasibleByBottom(new_polys)

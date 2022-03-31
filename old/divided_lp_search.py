@@ -1,18 +1,15 @@
 '''
 2020年3月25日 Use Linear Programming Search New Position
 '''
-from tools.polygon import GeoFunc,PltFunc,getData,getConvex,NFP
-from tools.packing import PolyListProcessor,NFPAssistant,PackingUtil
-from tools.lp import sovleLP
-from heuristic import BottomLeftFill
+from tools.polygon import get_data
+from tools.geometry_functions import GeometryFunctions
+from tools.plt_func import PltFunc
+from tools.poly_list_processor import PolyListProcessor
+from tools.packing_util import PackingUtil
 import pandas as pd
 import json
-from shapely.geometry import Polygon,Point,mapping,LineString
-from interval import Interval
+from shapely.geometry import Polygon
 import copy
-import random
-import math
-import datetime
 import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -117,7 +114,7 @@ class LPSearch(object):
                     new_position,new_depth=self.searchBestPosition() # 获得最优位置
 
                     top_point=LPAssistant.getTopPoint(self.all_polygons[choose_index][orientation])
-                    new_polygon=GeoFunc.getSlide(self.all_polygons[choose_index][orientation],new_position[0]-top_point[0],new_position[1]-top_point[1])
+                    new_polygon=GeometryFunctions.get_slide(self.all_polygons[choose_index][orientation], new_position[0] - top_point[0], new_position[1] - top_point[1])
                     PltFunc.addPolygonColor(new_polygon)
                     self.showPolys()
                     if new_depth<best_depth:
@@ -131,7 +128,7 @@ class LPSearch(object):
                     # 获取形状顶部位置并平移过去
                     new_poly=copy.deepcopy(self.all_polygons[choose_index][best_orientation])
                     top_point=LPAssistant.getTopPoint(new_poly)
-                    GeoFunc.slidePoly(new_poly,best_position[0]-top_point[0],best_position[1]-top_point[1])
+                    GeometryFunctions.slide_polygon(new_poly, best_position[0] - top_point[0], best_position[1] - top_point[1])
                     # 更新形状与重叠情况
                     self.polys[choose_index]=new_poly
                     self.updateOverlap()
@@ -204,11 +201,11 @@ class LPSearch(object):
             bottom_pt=LPAssistant.getBottomPoint(self.polys[j])
             delta_x,delta_y=bottom_pt[0],bottom_pt[1]
             # NFP计算结果
-            self.all_nfps.append(GeoFunc.getSlide(original_nfp,delta_x,delta_y)) 
+            self.all_nfps.append(GeometryFunctions.get_slide(original_nfp, delta_x, delta_y))
             # Divided_nfp处理
             divided_nfp=[]
             for nfp in original_divided_nfp:
-                divided_nfp.append(GeoFunc.getSlide(nfp,delta_x,delta_y)) 
+                divided_nfp.append(GeometryFunctions.get_slide(nfp, delta_x, delta_y))
             self.all_divided_nfp.append(divided_nfp)
             target_func=[]
             for coefficient in original_target_func:
@@ -369,7 +366,7 @@ class LPSearch(object):
         if inter.area>bias:
             new_inter=inter.intersection(self.IFR)
             if new_inter.area>bias:
-                overlap,overlap_poly=True,GeoFunc.polyToArr(new_inter) # 相交区域肯定是凸多边形
+                overlap,overlap_poly= True, GeometryFunctions.polygon_to_array(new_inter) # 相交区域肯定是凸多边形
         return overlap,overlap_poly
 
     def updateNFPOverlap(self):
@@ -389,7 +386,7 @@ class LPSearch(object):
             right_pt=LPAssistant.getRightPoint(poly)
             if right_pt[0]>self.cur_length:
                 delta_x=self.cur_length-right_pt[0]
-                GeoFunc.slidePoly(poly,delta_x,0)
+                GeometryFunctions.slide_polygon(poly, delta_x, 0)
                 top_pt=self.poly_status[index][1]
                 self.poly_status[index][1]=[top_pt[0]+delta_x,top_pt[1]]
     
@@ -408,7 +405,7 @@ class LPSearch(object):
     def getLength(self):
         _max=0
         for i in range(0,len(self.polys)):
-            extreme_index=GeoFunc.checkRight(self.polys[i])
+            extreme_index=GeometryFunctions.check_right(self.polys[i])
             extreme=self.polys[i][extreme_index][0]
             if extreme>_max:
                 _max=extreme
@@ -417,11 +414,11 @@ class LPSearch(object):
     def processRegion(self,region):
         area=[]
         if region.geom_type=="Polygon":
-            area=GeoFunc.polyToArr(region)  # 最终结果只和顶点相关
+            area=GeometryFunctions.polygon_to_array(region)  # 最终结果只和顶点相关
         else:
             for shapely_item in list(region):
                 if shapely_item.area>bias:
-                    area=area+GeoFunc.polyToArr(shapely_item)
+                    area= area + GeometryFunctions.polygon_to_array(shapely_item)
         return area
 
     def showPolys(self):
@@ -458,7 +455,7 @@ class LPSearch(object):
                 self.all_divided_nfp.append([])
                 continue
 
-            nfp=LPAssistant.deleteOnline(self.NFPAssistant.getDirectNFP(self.polys[i],self.polys[index])) # NFP可能有同一直线上的点
+            nfp=LPAssistant.deleteOnline(self.NFPAssistant.get_direct_nfp(self.polys[i], self.polys[index])) # NFP可能有同一直线上的点
             self.all_nfps.append(nfp)
             
             all_bisectior,divided_nfp,target_func=LPAssistant.getDividedNfp(nfp)
@@ -476,7 +473,7 @@ class LPSearch(object):
 
 if __name__=='__main__':
     # polys=getConvex(num=5)
-    polys=getData()
+    polys= get_data()
     # nfp_ass=NFPAssistant(polys,store_nfp=False,get_all_nfp=True,load_history=True)
     # print(datetime.datetime.now(),"计算完成NFP")
     # blf=BottomLeftFill(760,polys,vertical=False,NFPAssistant=nfp_ass)

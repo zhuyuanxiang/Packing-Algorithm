@@ -1,15 +1,14 @@
-from tools.polygon import PltFunc,GeoFunc,NFP,getConvex,getData
+from tools.polygon import get_convex
+from tools.geometry_functions import GeometryFunctions
+from tools.nfp import NFP
 from shapely.geometry import Polygon,mapping
-from tools.vectorization import vectorFunc
 from shapely import affinity
 from lp_search import LPSearch
-from sequence import BottomLeftFill,NFPAssistant
-import itertools
+from packing_algorithm.tools import BottomLeftFill
 import pandas as pd # 读csv
 import csv # 写csv
 import numpy as np # 数据处理
 import os
-import re
 import json
 import time
 import random
@@ -49,7 +48,7 @@ class GetShape(object):
             radius=random.randrange(200,500,100)
             pt=[radius*math.cos(radian),radius*math.sin(radian)]
             polygon.append(pt)
-        geoFunc.slidePoly(polygon,750,750)
+        geoFunc.slide_polygon(polygon, 750, 750)
         storePolygon(polygon,num=num)
         pltFunc.addPolygon(polygon)
         pltFunc.showPlt()
@@ -91,7 +90,7 @@ class TrainDataProcess(object):
                 polys=json.loads(pre_train["best_result"][i])
                 position_y=[]
                 for poly in polys:
-                    centroid=GeoFunc.getPt(Polygon(poly).centroid)
+                    centroid=GeometryFunctions.getPt(Polygon(poly).centroid)
                     position_y=position_y+[centroid[0]/1500,centroid[1]/3000]
                 writer.writerows([[i,position_y]])
                 
@@ -104,11 +103,11 @@ class TrainDataProcess(object):
             writer = csv.writer(csvfile)
             for i in range(0,5000):
                 polys=json.loads(pre_train["polys"][i])
-                centroid=GeoFunc.getPt(Polygon(polys[0]).centroid)
+                centroid=GeometryFunctions.getPt(Polygon(polys[0]).centroid)
                 relative_position=[[centroid[0]/1500,centroid[1]/1500]]
                 for j in range(1,len(polys)):
-                    centroid0=GeoFunc.getPt(Polygon(polys[j-1]).centroid)
-                    centroid1=GeoFunc.getPt(Polygon(polys[j]).centroid)
+                    centroid0=GeometryFunctions.getPt(Polygon(polys[j - 1]).centroid)
+                    centroid1=GeometryFunctions.getPt(Polygon(polys[j]).centroid)
                     relative_position.append([(centroid1[0]-centroid0[0])/1500,(centroid1[1]-centroid0[1])/1500])
                 writer.writerows([[i,relative_position]])
 
@@ -169,12 +168,12 @@ class TrainDataProcess(object):
         convex = pd.read_csv("/Users/sean/Documents/Projects/Data/convex_vec.csv")
         labels=["vec_64","vec_128","vec_256"]
         for i in range(0,10000):
-            poly_index,polys=getConvex(num=num,with_index=True)
+            poly_index,polys=get_convex(num=num, with_index=True)
             blf=BottomLeftFill(width,polys)
             new_polys=blf.polygons
             y=[]
             for poly in new_polys:
-                centroid=GeoFunc.getCentroid(poly)
+                centroid=GeometryFunctions.getCentroid(poly)
                 y.append(self.normVec(centroid,4000))
             all_x=[]
             for label in labels:
@@ -192,7 +191,7 @@ class TrainDataProcess(object):
         num=5
         # 获得足够的形状组合
         for i in range(0,10000):
-            poly_index,polys=getConvex(num=num,with_index=True)
+            poly_index,polys=get_convex(num=num, with_index=True)
             best_order,min_height,use_ratio=GetBestSeq(width,polys).chooseFromAll()
             with open("/Users/sean/Documents/Projects/Data/pre_train.csv","a+") as csvfile:
                 writer = csv.writer(csvfile)
@@ -250,7 +249,7 @@ class PreProccess(object):
             if pt[1]<min_y:
                 min_y=pt[1]
                 bottom_pt=[pt[0],pt[1]]
-        GeoFunc.slidePoly(poly,-bottom_pt[0],-bottom_pt[1])
+        GeometryFunctions.slide_polygon(poly, -bottom_pt[0], -bottom_pt[1])
 
     def normData(self,poly):
         new_poly,num=[],20

@@ -1,7 +1,6 @@
 .vscode*
 outputs*
 logs*
-history*
 result*
 **/*.pyc
 record/DRL*
@@ -13,3 +12,6 @@ record/DRL*
 figs/LP_Search*
 data/new*
 .history
+.output
+temp
+documents/report/~$*.pptx

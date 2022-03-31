@@ -1,6 +1,7 @@
 import numpy as np, operator, matplotlib.pyplot as plt
 from tools.polygon import get_data
-from tools.packing import NFPAssistant,PolyListProcessor
+from tools.poly_list_processor import PolyListProcessor
+from tools.nfp_assistant import NFPAssistant
 import time
 import multiprocessing
 import datetime
@@ -8,9 +9,9 @@ import random
 import copy
 
 class GA(object):
-    '''
+    """
     参考文献：A 2-exchange heuristic for nesting problems 2002
-    '''
+    """
     def __init__(self,width,poly_list,nfp_asst=None,generations=50,pop_size=20):
         self.width=width
         self.minimal_rotation=360 # 最小的旋转角度
@@ -277,4 +278,4 @@ if __name__=='__main__':
     # GetBestSeq(1000,getConvex(num=5),"decrease")
     endtime = datetime.datetime.now()
     print (endtime - starttime)
-    bfl.showAll()
+    bfl.show_all()

@@ -1,12 +1,16 @@
+
+import math
+
+import numpy as np
 import torch
 import torch.nn as nn
-import torch.autograd as autograd
 from torch.autograd import Variable
-import math
-import numpy as np
+
+
 # PyTorch 0.4.0 compatibility
 
-# Code borrowed from https://github.com/MaximumEntropy/Seq2Seq-PyTorch/blob/master/beam_search.py,
+# Code borrowed from
+# https://github.com/MaximumEntropy/Seq2Seq-PyTorch/blob/master/beam_search.py,
 # who borrowed it from PyTorch OpenNMT example
 # https://github.com/pytorch/examples/blob/master/OpenNMT/onmt/Beam.py
 class Beam(object):

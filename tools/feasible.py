@@ -3,8 +3,8 @@
 1. 直接按照重心的高低排列，逐一添加
 2. 通过比较高的
 '''
-from polygon import GeoFunc
-from sequence import BottomLeftFill
+from tools.geometry_functions import GeometryFunctions
+from tools.sequence import BottomLeftFill
 
 # Guided Local Search的变体
 class variantGLS(object):
@@ -16,7 +16,7 @@ class variantGLS(object):
 def getFeasibleByBottom(polys):
     polyList=[]
     for poly in polys:
-        bottom=poly[GeoFunc.checkBottom(poly)]
+        bottom=poly[GeometryFunctions.check_bottom(poly)]
         polyList.append({
             "poly":poly,
             "bottom_x":bottom[0],

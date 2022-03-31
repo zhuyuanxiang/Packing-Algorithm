@@ -9,7 +9,7 @@
 
   6262102    8.338    0.000   17.958    0.000 geo_assistant.py:167(getPointsContained)
 
-  1667408  169.548    0.000  570.568    0.000 geo_assistant.py:175(interBetweenNFPs)
+  1667408  169.548    0.000  570.568    0.000 geo_assistant.py:175(inter_between_nfps)
 
   1233325   38.816    0.000  173.769    0.000 geo_assistant.py:197(interNFPIFR)
   5046358   49.555    0.000  115.733    0.000 geo_assistant.py:23(judgeContain)
@@ -30,14 +30,14 @@
  17221871   17.326    0.000   17.326    0.000 lp_search_opt.py:177(<listcomp>)
  17221871   47.340    0.000   47.340    0.000 lp_search_opt.py:178(<listcomp>)
 
-    57539   34.753    0.001  757.453    0.013 lp_search_opt.py:253(getAllNFPInter)
+    57539   34.753    0.001  757.453    0.013 lp_search_opt.py:253(get_all_nfp_inter)
 
-    57539   52.815    0.001  162.216    0.003 lp_search_opt.py:283(processSearchTargets)
+    57539   52.815    0.001  162.216    0.003 lp_search_opt.py:283(process_search_targets)
  25789895   65.712    0.000   65.712    0.000 lp_search_opt.py:299(<listcomp>)
  17241270   19.091    0.000   19.091    0.000 lp_search_opt.py:300(<listcomp>)
-  6262102   26.300    0.000  718.158    0.000 lp_search_opt.py:304(interBetweenNFPs)
+  6262102   26.300    0.000  718.158    0.000 lp_search_opt.py:304(inter_between_nfps)
 
- 61370893  232.820    0.000 2187.218    0.000 lp_search_opt.py:351(getPolyPtPD)
+ 61370893  232.820    0.000 2187.218    0.000 lp_search_opt.py:351(get_poly_pt_pd)
 
   6262102   26.123    0.000   49.009    0.000 lp_search_opt.py:406(getAdjustPt)
 
